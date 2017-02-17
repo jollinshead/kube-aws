@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/coreos/kube-aws/cluster"
-	"github.com/coreos/kube-aws/config"
+	"github.com/coreos/kube-aws/core/root"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +19,7 @@ var (
 
 	validateOpts = struct {
 		awsDebug bool
+		skipWait bool
 		s3URI    string
 	}{}
 )
@@ -41,14 +41,9 @@ func init() {
 }
 
 func runCmdValidate(cmd *cobra.Command, args []string) error {
-	cfg, err := config.ClusterFromFile(configPath)
-	if err != nil {
-		return fmt.Errorf("Unable to load cluster config: %v", err)
-	}
+	opts := root.NewOptions(validateOpts.s3URI, validateOpts.awsDebug, validateOpts.skipWait)
 
-	opts := stackTemplateOptions(validateOpts.s3URI, validateOpts.awsDebug)
-
-	cluster, err := cluster.NewCluster(cfg, opts, validateOpts.awsDebug)
+	cluster, err := root.ClusterFromFile(configPath, opts, validateOpts.awsDebug)
 	if err != nil {
 		return fmt.Errorf("Failed to initialize cluster driver: %v", err)
 	}

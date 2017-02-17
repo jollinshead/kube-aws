@@ -2,11 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
-	"github.com/coreos/kube-aws/cluster"
-	"github.com/coreos/kube-aws/config"
+	"github.com/coreos/kube-aws/core/root"
 	"github.com/spf13/cobra"
 )
 
@@ -20,8 +17,8 @@ var (
 	}
 
 	updateOpts = struct {
-		awsDebug, prettyPrint bool
-		s3URI                 string
+		awsDebug, prettyPrint, skipWait bool
+		s3URI                           string
 	}{}
 )
 
@@ -30,38 +27,22 @@ func init() {
 	cmdUpdate.Flags().BoolVar(&updateOpts.awsDebug, "aws-debug", false, "Log debug information from aws-sdk-go library")
 	cmdUpdate.Flags().BoolVar(&updateOpts.prettyPrint, "pretty-print", false, "Pretty print the resulting CloudFormation")
 	cmdUpdate.Flags().StringVar(&updateOpts.s3URI, "s3-uri", "", "When your template is bigger than the cloudformation limit of 51200 bytes, upload the template to the specified location in S3. S3 location expressed as s3://<bucket>/path/to/dir")
+	cmdUpdate.Flags().BoolVar(&updateOpts.skipWait, "skip-wait", false, "Don't wait the resources finish")
 }
 
 func runCmdUpdate(cmd *cobra.Command, args []string) error {
-	// Up flags.
-	required := []struct {
-		name, val string
-	}{
-		{"--s3-uri", updateOpts.s3URI},
-	}
-	var missing []string
-	for _, req := range required {
-		if req.val == "" {
-			missing = append(missing, strconv.Quote(req.name))
-		}
-	}
-	if len(missing) != 0 {
-		return fmt.Errorf("Missing required flag(s): %s", strings.Join(missing, ", "))
+	if err := validateRequired(flag{"--s3-uri", updateOpts.s3URI}); err != nil {
+		return err
 	}
 
-	confCluster, err := config.ClusterFromFile(configPath)
+	opts := root.NewOptions(updateOpts.s3URI, updateOpts.prettyPrint, updateOpts.skipWait)
+
+	cluster, err := root.ClusterFromFile(configPath, opts, updateOpts.awsDebug)
 	if err != nil {
 		return fmt.Errorf("Failed to read cluster config: %v", err)
 	}
 
-	opts := stackTemplateOptions(updateOpts.s3URI, updateOpts.prettyPrint)
-
-	cluster, err := cluster.NewCluster(confCluster, opts, upOpts.awsDebug)
-	if err != nil {
-		return fmt.Errorf("Failed to initialize cluster driver: %v", err)
-	}
-
-	if err := cluster.ValidateUserData(); err != nil {
+	if _, err := cluster.ValidateStack(); err != nil {
 		return err
 	}
 
