@@ -91,7 +91,15 @@
                   {{end}}
                   "VolumeType": "{{$spec.RootVolumeType}}"
                 }
+              }{{if $spec.Ebs.VolumeSizeGb}},
+              {
+                "DeviceName": "/dev/xvdf",
+                "Ebs": {
+                  "VolumeSize": "{{$spec.Ebs.VolumeSizeGb}}",
+                  "VolumeType": "gp2"
+                }
               }
+              {{end}}
             ],
             "SecurityGroups": [
               {{range $sgIndex, $sgRef := $.SecurityGroupRefs}}

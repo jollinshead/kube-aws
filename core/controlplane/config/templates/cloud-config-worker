@@ -157,6 +157,36 @@ coreos:
         RequiredBy=rkt-api.service
 {{ end }}
 
+{{if .SpotFleet.LaunchSpecifications.Ebs.VolumeSizeGb}}
+    - name: format-ebs.service
+      command: start
+      content: |
+        [Unit]
+        Description=Formats the additional EBS volume drive
+        Before=local-fs-pre.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=-/usr/sbin/mkfs.xfs /dev/xvdf
+
+        [Install]
+        WantedBy=local-fs-pre.target
+
+    - name: ebs.mount
+      command: start
+      content: |
+        [Unit]
+        Description=Mount volume to /ebs
+        Before=kubelet.service docker.service
+
+        [Mount]
+        What=/dev/xvdf
+        Where=/ebs
+
+        [Install]
+        RequiredBy=kubelet.service docker.service
+{{ end }}
+
 {{ if .NodeDrainer.Enabled }}
     - name: kube-node-drainer.service
       enable: true

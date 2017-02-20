@@ -176,6 +176,11 @@ worker:
 #          #rootVolumeIOPS:
 #        - weightedCapacity: 2
 #          instanceType: c4.xlarge
+#
+#          # Additional EBS volume of type gp2 mounted to the path /ebs
+#        - ebs:
+#          volumeSizeGb: 0
+#
 #      # Used to provide `/etc/environment` env vars with values from arbitrary CloudFormation refs
 #      awsEnvironment:
 #        enabled: true
