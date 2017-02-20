@@ -161,7 +161,7 @@ func (c *Cluster) ValidateStack() (string, error) {
 	}
 
 	ec2Svc := ec2.New(c.session())
-	if err := c.validateWorkerEbsVolume(ec2Svc); err != nil {
+	if err := c.validateWorkerRootVolume(ec2Svc); err != nil {
 		return "", err
 	}
 	if c.KeyName != "" {
@@ -193,18 +193,18 @@ func (c *ClusterRef) validateKeyPair(ec2Svc ec2DescribeKeyPairsService) error {
 	return nil
 }
 
-func (c *ClusterRef) validateWorkerEbsVolume(ec2Svc ec2CreateVolumeService) error {
+func (c *ClusterRef) validateWorkerRootVolume(ec2Svc ec2CreateVolumeService) error {
 
 	//Send a dry-run request to validate the worker root volume parameters
-	workerEbsVolume := &ec2.CreateVolumeInput{
+	workerRootVolume := &ec2.CreateVolumeInput{
 		DryRun:           aws.Bool(true),
 		AvailabilityZone: aws.String(c.Subnets[0].AvailabilityZone),
-		Iops:             aws.Int64(int64(c.EbsVolumeIOPS)),
-		Size:             aws.Int64(int64(c.EbsVolumeSize)),
-		VolumeType:       aws.String(c.EbsVolumeType),
+		Iops:             aws.Int64(int64(c.RootVolumeIOPS)),
+		Size:             aws.Int64(int64(c.RootVolumeSize)),
+		VolumeType:       aws.String(c.RootVolumeType),
 	}
 
-	if _, err := ec2Svc.CreateVolume(workerEbsVolume); err != nil {
+	if _, err := ec2Svc.CreateVolume(workerRootVolume); err != nil {
 		operr, ok := err.(awserr.Error)
 
 		if !ok || (ok && operr.Code() != "DryRunOperation") {

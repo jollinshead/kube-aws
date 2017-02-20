@@ -28,9 +28,9 @@ func TestMainClusterConfig(t *testing.T) {
 			},
 			EtcdCount:               1,
 			EtcdInstanceType:        "t2.medium",
-			EtcdEbsVolumeSize:      30,
-			EtcdEbsVolumeType:      "gp2",
-			EtcdEbsVolumeIOPS:      0,
+			EtcdRootVolumeSize:      30,
+			EtcdRootVolumeType:      "gp2",
+			EtcdRootVolumeIOPS:      0,
 			EtcdDataVolumeSize:      30,
 			EtcdDataVolumeType:      "gp2",
 			EtcdDataVolumeIOPS:      0,
@@ -118,13 +118,13 @@ func TestMainClusterConfig(t *testing.T) {
 				WeightedCapacity: 1,
 				InstanceType:     "c4.large",
 				SpotPrice:        "0.06",
-				EbsVolume:       model.NewGp2EbsVolume(30),
+				RootVolume:       model.NewGp2RootVolume(30),
 			},
 			{
 				WeightedCapacity: 2,
 				InstanceType:     "c4.xlarge",
 				SpotPrice:        "0.12",
-				EbsVolume:       model.NewGp2EbsVolume(60),
+				RootVolume:       model.NewGp2RootVolume(60),
 			},
 		}
 		p := c.NodePools[0]
@@ -1452,20 +1452,20 @@ worker:
 			},
 		},
 		{
-			context: "WithSpotFleetWithCustomGp2EbsVolumeSettings",
+			context: "WithSpotFleetWithCustomGp2RootVolumeSettings",
 			configYaml: minimalValidConfigYaml + `
 worker:
   nodePools:
   - name: pool1
     spotFleet:
       targetCapacity: 10
-      unitEbsVolumeSize: 40
+      unitRootVolumeSize: 40
       launchSpecifications:
       - weightedCapacity: 1
         instanceType: c4.large
       - weightedCapacity: 2
         instanceType: c4.xlarge
-        ebsVolumeSize: 100
+        rootVolumeSize: 100
 `,
 			assertConfig: []ConfigTester{
 				hasDefaultExperimentalFeatures,
@@ -1476,15 +1476,15 @@ worker:
 							WeightedCapacity: 1,
 							InstanceType:     "c4.large",
 							SpotPrice:        "0.06",
-							// EbsVolumeSize was not specified in the configYaml but should default to workerEbsVolumeSize * weightedCapacity
-							// EbsVolumeType was not specified in the configYaml but should default to "gp2"
-							EbsVolume: model.NewGp2EbsVolume(40),
+							// RootVolumeSize was not specified in the configYaml but should default to workerRootVolumeSize * weightedCapacity
+							// RootVolumeType was not specified in the configYaml but should default to "gp2"
+							RootVolume: model.NewGp2RootVolume(40),
 						},
 						{
 							WeightedCapacity: 2,
 							InstanceType:     "c4.xlarge",
 							SpotPrice:        "0.12",
-							EbsVolume:       model.NewGp2EbsVolume(100),
+							RootVolume:       model.NewGp2RootVolume(100),
 						},
 					}
 					p := c.NodePools[0]
@@ -1507,7 +1507,7 @@ worker:
   - name: pool1
     spotFleet:
       targetCapacity: 10
-      unitEbsVolumeSize: 40
+      unitRootVolumeSize: 40
       launchSpecifications:
       - weightedCapacity: 1
         instanceType: m4.large
@@ -1523,14 +1523,14 @@ worker:
 							WeightedCapacity: 1,
 							InstanceType:     "m4.large",
 							SpotPrice:        "0.06",
-							// EbsVolumeType was not specified in the configYaml but should default to gp2:
-							EbsVolume: model.NewGp2EbsVolume(40),
+							// RootVolumeType was not specified in the configYaml but should default to gp2:
+							RootVolume: model.NewGp2RootVolume(40),
 						},
 						{
 							WeightedCapacity: 2,
 							InstanceType:     "m4.xlarge",
 							SpotPrice:        "0.12",
-							EbsVolume:       model.NewGp2EbsVolume(80),
+							RootVolume:       model.NewGp2RootVolume(80),
 						},
 					}
 					p := c.NodePools[0]
@@ -1546,22 +1546,22 @@ worker:
 			},
 		},
 		{
-			context: "WithSpotFleetWithCustomIo1EbsVolumeSettings",
+			context: "WithSpotFleetWithCustomIo1RootVolumeSettings",
 			configYaml: minimalValidConfigYaml + `
 worker:
   nodePools:
   - name: pool1
     spotFleet:
       targetCapacity: 10
-      ebsVolumeType: io1
-      unitEbsVolumeSize: 40
-      unitEbsVolumeIOPS: 100
+      rootVolumeType: io1
+      unitRootVolumeSize: 40
+      unitRootVolumeIOPS: 100
       launchSpecifications:
       - weightedCapacity: 1
         instanceType: c4.large
       - weightedCapacity: 2
         instanceType: c4.xlarge
-        ebsVolumeIOPS: 500
+        rootVolumeIOPS: 500
 `,
 			assertConfig: []ConfigTester{
 				hasDefaultExperimentalFeatures,
@@ -1572,17 +1572,17 @@ worker:
 							WeightedCapacity: 1,
 							InstanceType:     "c4.large",
 							SpotPrice:        "0.06",
-							// EbsVolumeSize was not specified in the configYaml but should default to workerEbsVolumeSize * weightedCapacity
-							// EbsVolumeIOPS was not specified in the configYaml but should default to workerEbsVolumeIOPS * weightedCapacity
-							// EbsVolumeType was not specified in the configYaml but should default to "io1"
-							EbsVolume: model.NewIo1EbsVolume(40, 100),
+							// RootVolumeSize was not specified in the configYaml but should default to workerRootVolumeSize * weightedCapacity
+							// RootVolumeIOPS was not specified in the configYaml but should default to workerRootVolumeIOPS * weightedCapacity
+							// RootVolumeType was not specified in the configYaml but should default to "io1"
+							RootVolume: model.NewIo1RootVolume(40, 100),
 						},
 						{
 							WeightedCapacity: 2,
 							InstanceType:     "c4.xlarge",
 							SpotPrice:        "0.12",
-							// EbsVolumeType was not specified in the configYaml but should default to:
-							EbsVolume: model.NewIo1EbsVolume(80, 500),
+							// RootVolumeType was not specified in the configYaml but should default to:
+							RootVolume: model.NewIo1RootVolume(80, 500),
 						},
 					}
 					p := c.NodePools[0]
@@ -1627,8 +1627,8 @@ routeTableId: rtb-1a2b3c4d
 						},
 						EtcdCount:               1,
 						EtcdInstanceType:        "t2.medium",
-						EtcdEbsVolumeSize:      30,
-						EtcdEbsVolumeType:      "gp2",
+						EtcdRootVolumeSize:      30,
+						EtcdRootVolumeType:      "gp2",
 						EtcdDataVolumeSize:      30,
 						EtcdDataVolumeType:      "gp2",
 						EtcdDataVolumeEphemeral: false,
@@ -1767,9 +1767,9 @@ etcdTenancy: dedicated
 vpcId: vpc-1a2b3c4d
 routeTableId: rtb-1a2b3c4d
 etcdCount: 2
-etcdEbsVolumeSize: 101
-etcdEbsVolumeType: io1
-etcdEbsVolumeIOPS: 102
+etcdRootVolumeSize: 101
+etcdRootVolumeType: io1
+etcdRootVolumeIOPS: 102
 etcdDataVolumeSize: 103
 etcdDataVolumeType: io1
 etcdDataVolumeIOPS: 104
@@ -1788,9 +1788,9 @@ etcdDataVolumeIOPS: 104
 						},
 						EtcdCount:               2,
 						EtcdInstanceType:        "t2.medium",
-						EtcdEbsVolumeSize:      101,
-						EtcdEbsVolumeType:      "io1",
-						EtcdEbsVolumeIOPS:      102,
+						EtcdRootVolumeSize:      101,
+						EtcdRootVolumeType:      "io1",
+						EtcdRootVolumeIOPS:      102,
 						EtcdDataVolumeSize:      103,
 						EtcdDataVolumeType:      "io1",
 						EtcdDataVolumeIOPS:      104,

@@ -98,39 +98,39 @@ vpcCIDR: "10.1.0.0/16"
 `,
 		},
 		{
-			context: "WithSpotFleetWithInvalidEbsVolumeType",
+			context: "WithSpotFleetWithInvalidRootVolumeType",
 			configYaml: minimalValidConfigYaml + `
 spotFleet:
   targetCapacity: 10
   launchSpecifications:
   - weightedCapacity: 1
     instanceType: c4.large
-    ebsVolumeType: foo
+    rootVolumeType: foo
 `,
 		},
 		{
-			context: "WithSpotFleetWithInvalidEbsVolumeIOPS",
+			context: "WithSpotFleetWithInvalidRootVolumeIOPS",
 			configYaml: minimalValidConfigYaml + `
 spotFleet:
   targetCapacity: 10
   launchSpecifications:
   - weightedCapacity: 1
     instanceType: c4.large
-    ebsVolumeType: io1
+    rootVolumeType: io1
     # must be 100~2000
-    ebsVolumeIOPS: 50
+    rootVolumeIOPS: 50
 `,
 		},
 		{
-			context: "WithSpotFleetWithInvalidEbsVolumeTypeAndIOPSCombination",
+			context: "WithSpotFleetWithInvalidRootVolumeTypeAndIOPSCombination",
 			configYaml: minimalValidConfigYaml + `
 spotFleet:
   targetCapacity: 10
   launchSpecifications:
   - weightedCapacity: 1
     instanceType: c4.large
-    ebsVolumeType: gp2
-    ebsVolumeIOPS: 1000
+    rootVolumeType: gp2
+    rootVolumeIOPS: 1000
 `,
 		},
 		{

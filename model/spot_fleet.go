@@ -5,16 +5,16 @@ import (
 	"strconv"
 )
 
-// UnitEbsVolumeSize/IOPS are used for spot fleets instead of WorkerEbsVolumeSize/IOPS,
+// UnitRootVolumeSize/IOPS are used for spot fleets instead of WorkerRootVolumeSize/IOPS,
 // so that we can make them clearer that they are not default size/iops for each worker node but "size/iops per unit"
 // as their names suggest
 type SpotFleet struct {
 	TargetCapacity       int                   `yaml:"targetCapacity,omitempty"`
 	SpotPrice            string                `yaml:"spotPrice,omitempty"`
 	IAMFleetRoleARN      string                `yaml:"iamFleetRoleArn,omitempty"`
-	EbsVolumeType       string                `yaml:"ebsVolumeType"`
-	UnitEbsVolumeSize   int                   `yaml:"unitEbsVolumeSize"`
-	UnitEbsVolumeIOPS   int                   `yaml:"unitEbsVolumeIOPS"`
+	RootVolumeType       string                `yaml:"rootVolumeType"`
+	UnitRootVolumeSize   int                   `yaml:"unitRootVolumeSize"`
+	UnitRootVolumeIOPS   int                   `yaml:"unitRootVolumeIOPS"`
 	LaunchSpecifications []LaunchSpecification `yaml:"launchSpecifications,omitempty"`
 }
 
@@ -38,16 +38,16 @@ func (f SpotFleet) WithDefaults() SpotFleet {
 		f.SpotPrice = defaults.SpotPrice
 	}
 
-	if f.UnitEbsVolumeSize == 0 {
-		f.UnitEbsVolumeSize = defaults.UnitEbsVolumeSize
+	if f.UnitRootVolumeSize == 0 {
+		f.UnitRootVolumeSize = defaults.UnitRootVolumeSize
 	}
 
-	if f.UnitEbsVolumeIOPS == 0 {
-		f.UnitEbsVolumeIOPS = defaults.UnitEbsVolumeIOPS
+	if f.UnitRootVolumeIOPS == 0 {
+		f.UnitRootVolumeIOPS = defaults.UnitRootVolumeIOPS
 	}
 
-	if f.EbsVolumeType == "" {
-		f.EbsVolumeType = defaults.EbsVolumeType
+	if f.RootVolumeType == "" {
+		f.RootVolumeType = defaults.RootVolumeType
 	}
 
 	if len(f.LaunchSpecifications) == 0 {
@@ -63,14 +63,14 @@ func (f SpotFleet) WithDefaults() SpotFleet {
 			}
 			spec.SpotPrice = strconv.FormatFloat(p*float64(spec.WeightedCapacity), 'f', -1, 64)
 		}
-		if spec.EbsVolumeType == "" {
-			spec.EbsVolumeType = f.EbsVolumeType
+		if spec.RootVolumeType == "" {
+			spec.RootVolumeType = f.RootVolumeType
 		}
-		if spec.EbsVolumeSize == 0 {
-			spec.EbsVolumeSize = f.UnitEbsVolumeSize * spec.WeightedCapacity
+		if spec.RootVolumeSize == 0 {
+			spec.RootVolumeSize = f.UnitRootVolumeSize * spec.WeightedCapacity
 		}
-		if spec.EbsVolumeType == "io1" && spec.EbsVolumeIOPS == 0 {
-			spec.EbsVolumeIOPS = f.UnitEbsVolumeIOPS * spec.WeightedCapacity
+		if spec.RootVolumeType == "io1" && spec.RootVolumeIOPS == 0 {
+			spec.RootVolumeIOPS = f.UnitRootVolumeIOPS * spec.WeightedCapacity
 		}
 		launchSpecs = append(launchSpecs, spec)
 	}
