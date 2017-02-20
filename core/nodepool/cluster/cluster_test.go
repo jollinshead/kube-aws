@@ -15,11 +15,11 @@ import (
 )
 
 type dummyEC2CreateVolumeService struct {
-	ExpectedRootVolume *ec2.CreateVolumeInput
+	ExpectedEbsVolume *ec2.CreateVolumeInput
 }
 
 func (svc dummyEC2CreateVolumeService) CreateVolume(input *ec2.CreateVolumeInput) (*ec2.Volume, error) {
-	expected := svc.ExpectedRootVolume
+	expected := svc.ExpectedEbsVolume
 
 	if !aws.BoolValue(input.DryRun) {
 		return nil, fmt.Errorf(
@@ -117,7 +117,7 @@ availabilityZone: us-west-1a
 const minimalYaml = `name: pool1
 `
 
-func TestValidateWorkerRootVolume(t *testing.T) {
+func TestValidateWorkerEbsVolume(t *testing.T) {
 	main, err := controlplane.ConfigFromBytes([]byte(`clusterName: test-cluster
 externalDNSName: test-cluster.example.com
 keyName: mykey
@@ -130,11 +130,11 @@ availabilityZone: dummy-az-0
 	}
 
 	testCases := []struct {
-		expectedRootVolume *ec2.CreateVolumeInput
+		expectedEbsVolume *ec2.CreateVolumeInput
 		clusterYaml        string
 	}{
 		{
-			expectedRootVolume: &ec2.CreateVolumeInput{
+			expectedEbsVolume: &ec2.CreateVolumeInput{
 				Iops:       aws.Int64(0),
 				Size:       aws.Int64(30),
 				VolumeType: aws.String("gp2"),
@@ -144,36 +144,36 @@ availabilityZone: dummy-az-0
 `,
 		},
 		{
-			expectedRootVolume: &ec2.CreateVolumeInput{
+			expectedEbsVolume: &ec2.CreateVolumeInput{
 				Iops:       aws.Int64(0),
 				Size:       aws.Int64(30),
 				VolumeType: aws.String("standard"),
 			},
 			clusterYaml: `
-rootVolumeType: standard
+ebsVolumeType: standard
 `,
 		},
 		{
-			expectedRootVolume: &ec2.CreateVolumeInput{
+			expectedEbsVolume: &ec2.CreateVolumeInput{
 				Iops:       aws.Int64(0),
 				Size:       aws.Int64(50),
 				VolumeType: aws.String("gp2"),
 			},
 			clusterYaml: `
-rootVolumeType: gp2
-rootVolumeSize: 50
+ebsVolumeType: gp2
+ebsVolumeSize: 50
 `,
 		},
 		{
-			expectedRootVolume: &ec2.CreateVolumeInput{
+			expectedEbsVolume: &ec2.CreateVolumeInput{
 				Iops:       aws.Int64(2000),
 				Size:       aws.Int64(100),
 				VolumeType: aws.String("io1"),
 			},
 			clusterYaml: `
-rootVolumeType: io1
-rootVolumeSize: 100
-rootVolumeIOPS: 2000
+ebsVolumeType: io1
+ebsVolumeSize: 100
+ebsVolumeIOPS: 2000
 `,
 		},
 	}
@@ -186,10 +186,10 @@ rootVolumeIOPS: 2000
 		}
 
 		ec2Svc := &dummyEC2CreateVolumeService{
-			ExpectedRootVolume: testCase.expectedRootVolume,
+			ExpectedEbsVolume: testCase.expectedEbsVolume,
 		}
 
-		if err := c.validateWorkerRootVolume(ec2Svc); err != nil {
+		if err := c.validateWorkerEbsVolume(ec2Svc); err != nil {
 			t.Errorf("error creating cluster: %v\nfor test case %+v", err, testCase)
 		}
 	}

@@ -486,30 +486,30 @@ func TestControllerVolumeType(t *testing.T) {
 		},
 		{
 			conf: `
-controllerRootVolumeType: gp2
+controllerEbsVolumeType: gp2
 `,
 			volumeType: "gp2",
 			iops:       0,
 		},
 		{
 			conf: `
-controllerRootVolumeType: standard
+controllerEbsVolumeType: standard
 `,
 			volumeType: "standard",
 			iops:       0,
 		},
 		{
 			conf: `
-controllerRootVolumeType: io1
-controllerRootVolumeIOPS: 100
+controllerEbsVolumeType: io1
+controllerEbsVolumeIOPS: 100
 `,
 			volumeType: "io1",
 			iops:       100,
 		},
 		{
 			conf: `
-controllerRootVolumeType: io1
-controllerRootVolumeIOPS: 2000
+controllerEbsVolumeType: io1
+controllerEbsVolumeIOPS: 2000
 `,
 			volumeType: "io1",
 			iops:       2000,
@@ -519,27 +519,27 @@ controllerRootVolumeIOPS: 2000
 	invalidConfigs := []string{
 		`
 # There's no volume type 'default'
-controllerRootVolumeType: default
+controllerEbsVolumeType: default
 `,
 		`
 # IOPS must be zero for volume types != 'io1'
-controllerRootVolumeType: standard
-controllerRootVolumeIOPS: 100
+controllerEbsVolumeType: standard
+controllerEbsVolumeIOPS: 100
 `,
 		`
 # IOPS must be zero for volume types != 'io1'
-controllerRootVolumeType: gp2
-controllerRootVolumeIOPS: 2000
+controllerEbsVolumeType: gp2
+controllerEbsVolumeIOPS: 2000
 `,
 		`
 # IOPS smaller than the minimum (100)
-controllerRootVolumeType: io1
-controllerRootVolumeIOPS: 99
+controllerEbsVolumeType: io1
+controllerEbsVolumeIOPS: 99
 `,
 		`
 # IOPS greater than the maximum (2000)
-controllerRootVolumeType: io1
-controllerRootVolumeIOPS: 2001
+controllerEbsVolumeType: io1
+controllerEbsVolumeIOPS: 2001
 `,
 	}
 
@@ -550,10 +550,10 @@ controllerRootVolumeIOPS: 2001
 			t.Errorf("failed to parse config %s: %v", confBody, err)
 			continue
 		}
-		if c.ControllerRootVolumeType != conf.volumeType {
+		if c.ControllerEbsVolumeType != conf.volumeType {
 			t.Errorf(
 				"parsed root volume type %s does not match root volume %s in config: %s",
-				c.ControllerRootVolumeType,
+				c.ControllerEbsVolumeType,
 				conf.volumeType,
 				confBody,
 			)
@@ -583,30 +583,30 @@ func TestWorkerVolumeType(t *testing.T) {
 		},
 		{
 			conf: `
-workerRootVolumeType: gp2
+workerEbsVolumeType: gp2
 `,
 			volumeType: "gp2",
 			iops:       0,
 		},
 		{
 			conf: `
-workerRootVolumeType: standard
+workerEbsVolumeType: standard
 `,
 			volumeType: "standard",
 			iops:       0,
 		},
 		{
 			conf: `
-workerRootVolumeType: io1
-workerRootVolumeIOPS: 100
+workerEbsVolumeType: io1
+workerEbsVolumeIOPS: 100
 `,
 			volumeType: "io1",
 			iops:       100,
 		},
 		{
 			conf: `
-workerRootVolumeType: io1
-workerRootVolumeIOPS: 2000
+workerEbsVolumeType: io1
+workerEbsVolumeIOPS: 2000
 `,
 			volumeType: "io1",
 			iops:       2000,
@@ -616,27 +616,27 @@ workerRootVolumeIOPS: 2000
 	invalidConfigs := []string{
 		`
 # There's no volume type 'default'
-workerRootVolumeType: default
+workerEbsVolumeType: default
 `,
 		`
 # IOPS must be zero for volume types != 'io1'
-workerRootVolumeType: standard
-workerRootVolumeIOPS: 100
+workerEbsVolumeType: standard
+workerEbsVolumeIOPS: 100
 `,
 		`
 # IOPS must be zero for volume types != 'io1'
-workerRootVolumeType: gp2
-workerRootVolumeIOPS: 2000
+workerEbsVolumeType: gp2
+workerEbsVolumeIOPS: 2000
 `,
 		`
 # IOPS smaller than the minimum (100)
-workerRootVolumeType: io1
-workerRootVolumeIOPS: 99
+workerEbsVolumeType: io1
+workerEbsVolumeIOPS: 99
 `,
 		`
 # IOPS greater than the maximum (2000)
-workerRootVolumeType: io1
-workerRootVolumeIOPS: 2001
+workerEbsVolumeType: io1
+workerEbsVolumeIOPS: 2001
 `,
 	}
 
@@ -647,10 +647,10 @@ workerRootVolumeIOPS: 2001
 			t.Errorf("failed to parse config %s: %v", confBody, err)
 			continue
 		}
-		if c.WorkerRootVolumeType != conf.volumeType {
+		if c.WorkerEbsVolumeType != conf.volumeType {
 			t.Errorf(
 				"parsed root volume type %s does not match root volume %s in config: %s",
-				c.WorkerRootVolumeType,
+				c.WorkerEbsVolumeType,
 				conf.volumeType,
 				confBody,
 			)

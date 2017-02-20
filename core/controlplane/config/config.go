@@ -94,9 +94,9 @@ func NewDefaultCluster() *Cluster {
 			WorkerCount:            0,
 			WorkerCreateTimeout:    "PT15M",
 			WorkerInstanceType:     "t2.medium",
-			WorkerRootVolumeType:   "gp2",
-			WorkerRootVolumeIOPS:   0,
-			WorkerRootVolumeSize:   30,
+			WorkerEbsVolumeType:   "gp2",
+			WorkerEbsVolumeIOPS:   0,
+			WorkerEbsVolumeSize:   30,
 			WorkerSecurityGroupIds: []string{},
 			WorkerTenancy:          "default",
 		},
@@ -105,17 +105,17 @@ func NewDefaultCluster() *Cluster {
 			ControllerCount:          1,
 			ControllerCreateTimeout:  "PT15M",
 			ControllerInstanceType:   "t2.medium",
-			ControllerRootVolumeType: "gp2",
-			ControllerRootVolumeIOPS: 0,
-			ControllerRootVolumeSize: 30,
+			ControllerEbsVolumeType: "gp2",
+			ControllerEbsVolumeIOPS: 0,
+			ControllerEbsVolumeSize: 30,
 			ControllerTenancy:        "default",
 		},
 		EtcdSettings: EtcdSettings{
 			EtcdCount:          1,
 			EtcdInstanceType:   "t2.medium",
-			EtcdRootVolumeSize: 30,
-			EtcdRootVolumeType: "gp2",
-			EtcdRootVolumeIOPS: 0,
+			EtcdEbsVolumeSize: 30,
+			EtcdEbsVolumeType: "gp2",
+			EtcdEbsVolumeIOPS: 0,
 			EtcdDataVolumeSize: 30,
 			EtcdDataVolumeType: "gp2",
 			EtcdDataVolumeIOPS: 0,
@@ -357,9 +357,9 @@ type DefaultWorkerSettings struct {
 	WorkerCount            int      `yaml:"workerCount,omitempty"`
 	WorkerCreateTimeout    string   `yaml:"workerCreateTimeout,omitempty"`
 	WorkerInstanceType     string   `yaml:"workerInstanceType,omitempty"`
-	WorkerRootVolumeType   string   `yaml:"workerRootVolumeType,omitempty"`
-	WorkerRootVolumeIOPS   int      `yaml:"workerRootVolumeIOPS,omitempty"`
-	WorkerRootVolumeSize   int      `yaml:"workerRootVolumeSize,omitempty"`
+	WorkerEbsVolumeType   string   `yaml:"workerEbsVolumeType,omitempty"`
+	WorkerEbsVolumeIOPS   int      `yaml:"workerEbsVolumeIOPS,omitempty"`
+	WorkerEbsVolumeSize   int      `yaml:"workerEbsVolumeSize,omitempty"`
 	WorkerSpotPrice        string   `yaml:"workerSpotPrice,omitempty"`
 	WorkerSecurityGroupIds []string `yaml:"workerSecurityGroupIds,omitempty"`
 	WorkerTenancy          string   `yaml:"workerTenancy,omitempty"`
@@ -372,9 +372,9 @@ type ControllerSettings struct {
 	ControllerCount          int    `yaml:"controllerCount,omitempty"`
 	ControllerCreateTimeout  string `yaml:"controllerCreateTimeout,omitempty"`
 	ControllerInstanceType   string `yaml:"controllerInstanceType,omitempty"`
-	ControllerRootVolumeType string `yaml:"controllerRootVolumeType,omitempty"`
-	ControllerRootVolumeIOPS int    `yaml:"controllerRootVolumeIOPS,omitempty"`
-	ControllerRootVolumeSize int    `yaml:"controllerRootVolumeSize,omitempty"`
+	ControllerEbsVolumeType string `yaml:"controllerEbsVolumeType,omitempty"`
+	ControllerEbsVolumeIOPS int    `yaml:"controllerEbsVolumeIOPS,omitempty"`
+	ControllerEbsVolumeSize int    `yaml:"controllerEbsVolumeSize,omitempty"`
 	ControllerTenancy        string `yaml:"controllerTenancy,omitempty"`
 }
 
@@ -383,9 +383,9 @@ type EtcdSettings struct {
 	model.Etcd              `yaml:"etcd,omitempty"`
 	EtcdCount               int    `yaml:"etcdCount"`
 	EtcdInstanceType        string `yaml:"etcdInstanceType,omitempty"`
-	EtcdRootVolumeSize      int    `yaml:"etcdRootVolumeSize,omitempty"`
-	EtcdRootVolumeType      string `yaml:"etcdRootVolumeType,omitempty"`
-	EtcdRootVolumeIOPS      int    `yaml:"etcdRootVolumeIOPS,omitempty"`
+	EtcdEbsVolumeSize      int    `yaml:"etcdEbsVolumeSize,omitempty"`
+	EtcdEbsVolumeType      string `yaml:"etcdEbsVolumeType,omitempty"`
+	EtcdEbsVolumeIOPS      int    `yaml:"etcdEbsVolumeIOPS,omitempty"`
 	EtcdDataVolumeSize      int    `yaml:"etcdDataVolumeSize,omitempty"`
 	EtcdDataVolumeType      string `yaml:"etcdDataVolumeType,omitempty"`
 	EtcdDataVolumeIOPS      int    `yaml:"etcdDataVolumeIOPS,omitempty"`
@@ -1069,17 +1069,17 @@ func (c DeploymentSettings) NATGateways() []model.NATGateway {
 }
 
 func (c DefaultWorkerSettings) Valid() error {
-	if c.WorkerRootVolumeType == "io1" {
-		if c.WorkerRootVolumeIOPS < 100 || c.WorkerRootVolumeIOPS > 2000 {
-			return fmt.Errorf("invalid workerRootVolumeIOPS: %d", c.WorkerRootVolumeIOPS)
+	if c.WorkerEbsVolumeType == "io1" {
+		if c.WorkerEbsVolumeIOPS < 100 || c.WorkerEbsVolumeIOPS > 2000 {
+			return fmt.Errorf("invalid workerEbsVolumeIOPS: %d", c.WorkerEbsVolumeIOPS)
 		}
 	} else {
-		if c.WorkerRootVolumeIOPS != 0 {
-			return fmt.Errorf("invalid workerRootVolumeIOPS for volume type '%s': %d", c.WorkerRootVolumeType, c.WorkerRootVolumeIOPS)
+		if c.WorkerEbsVolumeIOPS != 0 {
+			return fmt.Errorf("invalid workerEbsVolumeIOPS for volume type '%s': %d", c.WorkerEbsVolumeType, c.WorkerEbsVolumeIOPS)
 		}
 
-		if c.WorkerRootVolumeType != "standard" && c.WorkerRootVolumeType != "gp2" {
-			return fmt.Errorf("invalid workerRootVolumeType: %s", c.WorkerRootVolumeType)
+		if c.WorkerEbsVolumeType != "standard" && c.WorkerEbsVolumeType != "gp2" {
+			return fmt.Errorf("invalid workerEbsVolumeType: %s", c.WorkerEbsVolumeType)
 		}
 	}
 
@@ -1091,17 +1091,17 @@ func (c DefaultWorkerSettings) Valid() error {
 }
 
 func (c ControllerSettings) Valid() error {
-	if c.ControllerRootVolumeType == "io1" {
-		if c.ControllerRootVolumeIOPS < 100 || c.ControllerRootVolumeIOPS > 2000 {
-			return fmt.Errorf("invalid controllerRootVolumeIOPS: %d", c.ControllerRootVolumeIOPS)
+	if c.ControllerEbsVolumeType == "io1" {
+		if c.ControllerEbsVolumeIOPS < 100 || c.ControllerEbsVolumeIOPS > 2000 {
+			return fmt.Errorf("invalid controllerEbsVolumeIOPS: %d", c.ControllerEbsVolumeIOPS)
 		}
 	} else {
-		if c.ControllerRootVolumeIOPS != 0 {
-			return fmt.Errorf("invalid controllerRootVolumeIOPS for volume type '%s': %d", c.ControllerRootVolumeType, c.ControllerRootVolumeIOPS)
+		if c.ControllerEbsVolumeIOPS != 0 {
+			return fmt.Errorf("invalid controllerEbsVolumeIOPS for volume type '%s': %d", c.ControllerEbsVolumeType, c.ControllerEbsVolumeIOPS)
 		}
 
-		if c.ControllerRootVolumeType != "standard" && c.ControllerRootVolumeType != "gp2" {
-			return fmt.Errorf("invalid controllerRootVolumeType: %s", c.ControllerRootVolumeType)
+		if c.ControllerEbsVolumeType != "standard" && c.ControllerEbsVolumeType != "gp2" {
+			return fmt.Errorf("invalid controllerEbsVolumeType: %s", c.ControllerEbsVolumeType)
 		}
 	}
 

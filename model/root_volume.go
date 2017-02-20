@@ -2,40 +2,40 @@ package model
 
 import "fmt"
 
-type RootVolume struct {
-	RootVolumeType string `yaml:"rootVolumeType,omitempty"`
-	RootVolumeIOPS int    `yaml:"rootVolumeIOPS,omitempty"`
-	RootVolumeSize int    `yaml:"rootVolumeSize,omitempty"`
+type EbsVolume struct {
+	EbsVolumeType string `yaml:"ebsVolumeType,omitempty"`
+	EbsVolumeIOPS int    `yaml:"ebsVolumeIOPS,omitempty"`
+	EbsVolumeSize int    `yaml:"ebsVolumeSize,omitempty"`
 }
 
-func NewGp2RootVolume(size int) RootVolume {
-	return RootVolume{
-		RootVolumeSize: size,
-		RootVolumeIOPS: 0,
-		RootVolumeType: "gp2",
+func NewGp2EbsVolume(size int) EbsVolume {
+	return EbsVolume{
+		EbsVolumeSize: size,
+		EbsVolumeIOPS: 0,
+		EbsVolumeType: "gp2",
 	}
 }
 
-func NewIo1RootVolume(size int, iops int) RootVolume {
-	return RootVolume{
-		RootVolumeSize: size,
-		RootVolumeIOPS: iops,
-		RootVolumeType: "io1",
+func NewIo1EbsVolume(size int, iops int) EbsVolume {
+	return EbsVolume{
+		EbsVolumeSize: size,
+		EbsVolumeIOPS: iops,
+		EbsVolumeType: "io1",
 	}
 }
 
-func (v RootVolume) Validate() error {
-	if v.RootVolumeType == "io1" {
-		if v.RootVolumeIOPS < 100 || v.RootVolumeIOPS > 2000 {
-			return fmt.Errorf(`invalid rootVolumeIOPS %d in %+v: rootVolumeIOPS must be between 100 and 2000`, v.RootVolumeIOPS, v)
+func (v EbsVolume) Validate() error {
+	if v.EbsVolumeType == "io1" {
+		if v.EbsVolumeIOPS < 100 || v.EbsVolumeIOPS > 2000 {
+			return fmt.Errorf(`invalid ebsVolumeIOPS %d in %+v: ebsVolumeIOPS must be between 100 and 2000`, v.EbsVolumeIOPS, v)
 		}
 	} else {
-		if v.RootVolumeIOPS != 0 {
-			return fmt.Errorf(`invalid rootVolumeIOPS %d for volume type "%s" in %+v": rootVolumeIOPS must be 0 when rootVolumeType is "standard" or "gp1"`, v.RootVolumeIOPS, v.RootVolumeType, v)
+		if v.EbsVolumeIOPS != 0 {
+			return fmt.Errorf(`invalid ebsVolumeIOPS %d for volume type "%s" in %+v": ebsVolumeIOPS must be 0 when ebsVolumeType is "standard" or "gp1"`, v.EbsVolumeIOPS, v.EbsVolumeType, v)
 		}
 
-		if v.RootVolumeType != "standard" && v.RootVolumeType != "gp2" {
-			return fmt.Errorf(`invalid rootVolumeType "%s" in %+v: rootVolumeType must be one of "standard", "gp1", "io1"`, v.RootVolumeType, v)
+		if v.EbsVolumeType != "standard" && v.EbsVolumeType != "gp2" {
+			return fmt.Errorf(`invalid ebsVolumeType "%s" in %+v: ebsVolumeType must be one of "standard", "gp1", "io1"`, v.EbsVolumeType, v)
 		}
 	}
 	return nil

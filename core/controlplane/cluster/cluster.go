@@ -227,7 +227,7 @@ func (c *Cluster) Validate() error {
 		return err
 	}
 
-	if err := c.validateControllerRootVolume(ec2Svc); err != nil {
+	if err := c.validateControllerEbsVolume(ec2Svc); err != nil {
 		return err
 	}
 
@@ -527,18 +527,18 @@ func isSubdomain(sub, parent string) bool {
 	return true
 }
 
-func (c *ClusterRef) validateControllerRootVolume(ec2Svc ec2Service) error {
+func (c *ClusterRef) validateControllerEbsVolume(ec2Svc ec2Service) error {
 
 	//Send a dry-run request to validate the controller root volume parameters
-	controllerRootVolume := &ec2.CreateVolumeInput{
+	controllerEbsVolume := &ec2.CreateVolumeInput{
 		DryRun:           aws.Bool(true),
 		AvailabilityZone: aws.String(c.AvailabilityZones()[0]),
-		Iops:             aws.Int64(int64(c.ControllerRootVolumeIOPS)),
-		Size:             aws.Int64(int64(c.ControllerRootVolumeSize)),
-		VolumeType:       aws.String(c.ControllerRootVolumeType),
+		Iops:             aws.Int64(int64(c.ControllerEbsVolumeIOPS)),
+		Size:             aws.Int64(int64(c.ControllerEbsVolumeSize)),
+		VolumeType:       aws.String(c.ControllerEbsVolumeType),
 	}
 
-	if _, err := ec2Svc.CreateVolume(controllerRootVolume); err != nil {
+	if _, err := ec2Svc.CreateVolume(controllerEbsVolume); err != nil {
 		if operr, ok := err.(awserr.Error); ok && operr.Code() != "DryRunOperation" {
 			return fmt.Errorf("create volume dry-run request failed: %v", err)
 		}

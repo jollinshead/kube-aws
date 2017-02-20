@@ -12,7 +12,7 @@ type NodePoolConfig struct {
 	CreateTimeout      string            `yaml:"createTimeout,omitempty"`
 	InstanceType       string            `yaml:"instanceType,omitempty"`
 	ManagedIamRoleName string            `yaml:"managedIamRoleName,omitempty"`
-	RootVolume         `yaml:",inline"`
+	EbsVolume         `yaml:",inline"`
 	SpotPrice          string   `yaml:"spotPrice,omitempty"`
 	SecurityGroupIds   []string `yaml:"securityGroupIds,omitempty"`
 	Tenancy            string   `yaml:"tenancy,omitempty"`
@@ -31,7 +31,7 @@ type LaunchSpecification struct {
 	WeightedCapacity int    `yaml:"weightedCapacity,omitempty"`
 	InstanceType     string `yaml:"instanceType,omitempty"`
 	SpotPrice        string `yaml:"spotPrice,omitempty"`
-	RootVolume       `yaml:",inline"`
+	EbsVolume       `yaml:",inline"`
 }
 
 func NewDefaultNodePoolConfig() NodePoolConfig {
@@ -41,10 +41,10 @@ func NewDefaultNodePoolConfig() NodePoolConfig {
 		Count:         &c,
 		CreateTimeout: "PT15M",
 		InstanceType:  "t2.medium",
-		RootVolume: RootVolume{
-			RootVolumeType: "gp2",
-			RootVolumeIOPS: 0,
-			RootVolumeSize: 30,
+		EbsVolume: EbsVolume{
+			EbsVolumeType: "gp2",
+			EbsVolumeIOPS: 0,
+			EbsVolumeSize: 30,
 		},
 		SecurityGroupIds: []string{},
 		Tenancy:          "default",
@@ -54,8 +54,8 @@ func NewDefaultNodePoolConfig() NodePoolConfig {
 func newDefaultSpotFleet() SpotFleet {
 	return SpotFleet{
 		SpotPrice:          "0.06",
-		UnitRootVolumeSize: 30,
-		RootVolumeType:     "gp2",
+		UnitEbsVolumeSize: 30,
+		EbsVolumeType:     "gp2",
 		LaunchSpecifications: []LaunchSpecification{
 			NewLaunchSpecification(1, "c4.large"),
 			NewLaunchSpecification(2, "c4.xlarge"),
@@ -67,10 +67,10 @@ func NewLaunchSpecification(weightedCapacity int, instanceType string) LaunchSpe
 	return LaunchSpecification{
 		WeightedCapacity: weightedCapacity,
 		InstanceType:     instanceType,
-		RootVolume: RootVolume{
-			RootVolumeSize: 0,
-			RootVolumeIOPS: 0,
-			RootVolumeType: "",
+		EbsVolume: EbsVolume{
+			EbsVolumeSize: 0,
+			EbsVolumeIOPS: 0,
+			EbsVolumeType: "",
 		},
 	}
 }
@@ -97,7 +97,7 @@ func (c NodePoolConfig) Valid() error {
 		return fmt.Errorf("selected worker tenancy (%s) is incompatible with spot instances", c.Tenancy)
 	}
 
-	if err := c.RootVolume.Validate(); err != nil {
+	if err := c.EbsVolume.Validate(); err != nil {
 		return err
 	}
 
@@ -133,7 +133,7 @@ func (c NodePoolConfig) RollingUpdateMinInstancesInService() int {
 }
 
 func (c LaunchSpecification) Valid() error {
-	if err := c.RootVolume.Validate(); err != nil {
+	if err := c.EbsVolume.Validate(); err != nil {
 		return err
 	}
 	return nil
