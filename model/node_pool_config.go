@@ -16,6 +16,7 @@ type NodePoolConfig struct {
 	SpotPrice          string   `yaml:"spotPrice,omitempty"`
 	SecurityGroupIds   []string `yaml:"securityGroupIds,omitempty"`
 	Tenancy            string   `yaml:"tenancy,omitempty"`
+	EbsVolumes         []EbsVolume       `yaml:"ebsVolumes,omitempty"`
 }
 
 type ClusterAutoscaler struct {
@@ -32,6 +33,7 @@ type LaunchSpecification struct {
 	InstanceType     string `yaml:"instanceType,omitempty"`
 	SpotPrice        string `yaml:"spotPrice,omitempty"`
 	RootVolume       `yaml:",inline"`
+	EbsVolumes       []EbsVolume       `yaml:"ebsVolumes,omitempty"`
 }
 
 func NewDefaultNodePoolConfig() NodePoolConfig {
@@ -105,6 +107,22 @@ func (c NodePoolConfig) Valid() error {
 		return err
 	}
 
+	mountPaths := make(map[string]bool)
+	devices:= make(map[string]bool)
+	for _,volume := range c.EbsVolumes {
+		if err := volume.Validate(); err != nil {
+			return err
+		}
+		if mountPaths[volume.MountPath] == true {
+			return fmt.Errorf("duplicate ebsVolume mountPath detected (%s) - values must be unique", volume.MountPath)
+		}
+		mountPaths[volume.MountPath] = true
+		if devices[volume.Device] == true {
+			return fmt.Errorf("duplicate ebsVolume device detected (%s) - values must be unique", volume.Device)
+		}
+		devices[volume.Device] = true
+	}
+
 	return nil
 }
 
@@ -135,6 +153,22 @@ func (c NodePoolConfig) RollingUpdateMinInstancesInService() int {
 func (c LaunchSpecification) Valid() error {
 	if err := c.RootVolume.Validate(); err != nil {
 		return err
+	}
+
+	mountPaths := make(map[string]bool)
+	devices:= make(map[string]bool)
+	for _,volume := range c.EbsVolumes {
+		if err := volume.Validate(); err != nil {
+			return err
+		}
+		if mountPaths[volume.MountPath] == true {
+			return fmt.Errorf("duplicate ebsVolume mountPath detected (%s) - values must be unique", volume.MountPath)
+		}
+		mountPaths[volume.MountPath] = true
+		if devices[volume.Device] == true {
+			return fmt.Errorf("duplicate ebsVolume device detected (%s) - values must be unique", volume.Device)
+		}
+		devices[volume.Device] = true
 	}
 	return nil
 }
