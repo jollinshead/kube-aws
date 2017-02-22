@@ -28,20 +28,20 @@ func (c WorkerNodePoolConfig) Validate() error {
 }
 
 func (c WorkerNodePoolConfig) WithDefaultsFrom(main cfg.DefaultWorkerSettings) WorkerNodePoolConfig {
-	if c.RootVolume.RootVolumeType == "" {
-		c.RootVolume.RootVolumeType = main.WorkerRootVolumeType
+	if c.RootVolume.Type == "" {
+		c.RootVolume.Type = main.WorkerRootVolumeType
 	}
 
-	if c.RootVolume.RootVolumeIOPS == 0 && c.RootVolume.RootVolumeType == "io1" {
-		c.RootVolume.RootVolumeIOPS = main.WorkerRootVolumeIOPS
+	if c.RootVolume.Iops == 0 && c.RootVolume.Type == "io1" {
+		c.RootVolume.Iops = main.WorkerRootVolumeIOPS
 	}
 
 	if c.SpotFleet.RootVolumeType == "" {
-		c.SpotFleet.RootVolumeType = c.RootVolume.RootVolumeType
+		c.SpotFleet.RootVolumeType = c.RootVolume.Type
 	}
 
-	if c.RootVolumeSize == 0 {
-		c.RootVolumeSize = main.WorkerRootVolumeSize
+	if c.RootVolume.Size == 0 {
+		c.RootVolume.Size = main.WorkerRootVolumeSize
 	}
 
 	if c.Tenancy == "" {

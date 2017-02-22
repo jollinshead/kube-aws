@@ -63,14 +63,14 @@ func (f SpotFleet) WithDefaults() SpotFleet {
 			}
 			spec.SpotPrice = strconv.FormatFloat(p*float64(spec.WeightedCapacity), 'f', -1, 64)
 		}
-		if spec.RootVolumeType == "" {
-			spec.RootVolumeType = f.RootVolumeType
+		if spec.RootVolume.Type == "" {
+			spec.RootVolume.Type = f.RootVolumeType
 		}
-		if spec.RootVolumeSize == 0 {
-			spec.RootVolumeSize = f.UnitRootVolumeSize * spec.WeightedCapacity
+		if spec.RootVolume.Size == 0 {
+			spec.RootVolume.Size = f.UnitRootVolumeSize * spec.WeightedCapacity
 		}
-		if spec.RootVolumeType == "io1" && spec.RootVolumeIOPS == 0 {
-			spec.RootVolumeIOPS = f.UnitRootVolumeIOPS * spec.WeightedCapacity
+		if spec.RootVolume.Type == "io1" && spec.RootVolume.Iops == 0 {
+			spec.RootVolume.Iops = f.UnitRootVolumeIOPS * spec.WeightedCapacity
 		}
 		launchSpecs = append(launchSpecs, spec)
 	}
