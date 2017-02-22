@@ -9,6 +9,60 @@ coreos:
     etcd_keyfile: /etc/kubernetes/ssl/etcd-client-key.pem
 
   units:
+{{range $subnetIndex, $workerSubnet := $.Subnets -}}
+{{range $specIndex, $spec := $.SpotFleet.LaunchSpecifications -}}
+{{range $ebsVolumeSpecIndex, $ebsVolumeSpec := $spec.EbsVolumes}}
+    - name: format-{{$ebsVolumeSpec.SystemdMountName}}.service
+      command: start
+      content: |
+        [Unit]
+        Description=Formats the EBS persistent volume drive for {{$ebsVolumeSpec.Device}}
+        Before=local-fs-pre.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=-/usr/sbin/mkfs.xfs {{$ebsVolumeSpec.Device}}
+
+        [Install]
+        WantedBy=local-fs-pre.target
+
+    - name: {{$ebsVolumeSpec.SystemdMountName}}.mount
+      command: start
+      content: |
+        [Unit]
+        Description=Mount volume to {{$ebsVolumeSpec.MountPath}}
+
+        [Mount]
+        What={{$ebsVolumeSpec.Device}}
+        Where={{$ebsVolumeSpec.MountPath}}
+{{end}}
+{{end -}}
+{{end -}}
+{{range $ebsVolumeSpecIndex, $ebsVolumeSpec := .EbsVolumes}}
+    - name: format-{{$ebsVolumeSpec.SystemdMountName}}.service
+      command: start
+      content: |
+        [Unit]
+        Description=Formats the EBS persistent volume drive for {{$ebsVolumeSpec.Device}}
+        Before=local-fs-pre.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=-/usr/sbin/mkfs.xfs {{$ebsVolumeSpec.Device}}
+
+        [Install]
+        WantedBy=local-fs-pre.target
+
+    - name: {{$ebsVolumeSpec.SystemdMountName}}.mount
+      command: start
+      content: |
+        [Unit]
+        Description=Mount volume to {{$ebsVolumeSpec.MountPath}}
+
+        [Mount]
+        What={{$ebsVolumeSpec.Device}}
+        Where={{$ebsVolumeSpec.MountPath}}
+{{end}}
     - name: cfn-etcd-environment.service
       enable: true
       command: start
